@@ -2,34 +2,58 @@ import pool from '../lib/utils/pool.js';
 import setup from '../data/setup.js';
 import request from 'supertest';
 import app from '../lib/app.js';
+import User from '../lib/models/User.js';
 
 describe('user routes', () => {
-  beforeEach(() => {
-    return setup(pool);
-  });
+  let user1;
 
-  test('create account using POST to /api/v1/auth/signup', async () => {
-    const user = {
+  beforeEach(() => {
+    user1 = {
       username: 'user1',
       profilePhotoUrl: 'https://placekitten.com/300/200',
       password: 'password'
     };
 
+    return setup(pool);
+  });
+
+  test('create account using POST to /api/v1/auth/signup', async () => {
     const res = await request(app)
       .post('/api/v1/auth/signup')
-      .send(user)
+      .send(user1)
     ;
 
     expect(res.body).toEqual({
       id: '1',
-      username: user.username,
-      profilePhotoUrl: user.profilePhotoUrl,
+      username: user1.username,
+      profilePhotoUrl: user1.profilePhotoUrl,
       passwordHash: expect.any(String)
     });
   });
 
-  test.skip('sign in using POST to /api/v1/auth/signin', async () => {
+  test('sign in using POST to /api/v1/auth/signin', async () => {
+    // post a user
+    await request(app)
+      .post('/api/v1/auth/signup')
+      .send(user1)
+    ;
 
+    // try to sign in as that user
+    const res = await request(app)
+      .post('/api/v1/auth/signin')
+      .send({
+        username: user1.username,
+        password: user1.password
+      })
+    ;
+
+    // test to see if correct response
+    expect(res.body).toEqual({
+      id: '1',
+      username: user1.username,
+      profilePhotoUrl: user1.profilePhotoUrl,
+      passwordHash: expect.any(String)
+    });
   });
 
   test.skip('get most commented on users with GET to /api/v1/users/popular', async () => {
