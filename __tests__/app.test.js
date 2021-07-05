@@ -49,13 +49,13 @@ describe('user routes', () => {
   });
 });
 
-describe('post routes', () => {
+describe.skip('post routes', () => {
   beforeEach(() => {
     return setup(pool);
   });
 });
 
-describe('comment routes', () => {
+describe.skip('comment routes', () => {
   beforeEach(() => {
     return setup(pool);
   });
