@@ -74,7 +74,7 @@ describe('user routes', () => {
 
 describe('post routes', () => {
   const agent = request.agent(app);
-  let post1, user1;
+  let post1, post2, user1;
 
   beforeEach(async () => {
     setup(pool);
@@ -86,8 +86,14 @@ describe('post routes', () => {
       password: 'password'
     };
 
-    const res = await request(app)
+    await request(app)
       .post('/api/v1/auth/signup')
+      .send(user1)
+    ;
+
+    // sign in the user
+    const res = await agent
+      .post('/api/v1/auth/signin')
       .send(user1)
     ;
 
@@ -98,15 +104,15 @@ describe('post routes', () => {
       caption: 'my baby!!!',
       tags: ['kitten', 'cat', 'pets']
     };
+    post2 = {
+      userId: res.body.id,
+      photoUrl: 'https://placekitten.com/333/222',
+      caption: 'does anyone know whose cat this is?',
+      tags: ['lost', 'cat', 'found', 'missing']
+    };
   });
 
   test('POST for /api/v1/posts', async () => {
-    // sign in the user
-    await agent
-      .post('/api/v1/auth/signin')
-      .send(user1)
-    ;
-
     // make a post
     const res = await agent
       .post('/api/v1/posts')
@@ -115,6 +121,18 @@ describe('post routes', () => {
 
     // test that post is correct
     expect(res.body).toEqual({ ...post1, id: expect.any(String) });
+  });
+
+  test('GET all posts from /api/v1/posts', async () => {
+    // post 2 posts
+    const p1 = await agent.post('/api/v1/posts').send(post1);
+    const p2 = await agent.post('/api/v1/posts').send(post2);
+
+    // get the posts
+    const res = await agent.get('/api/v1/posts');
+   
+    // test
+    expect(res.body).toEqual([p1, p2]);
   });
 });
 
