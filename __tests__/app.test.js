@@ -134,6 +134,17 @@ describe('post routes', () => {
     // test
     expect(res.body).toEqual([p1.body, p2.body]);
   });
+
+  test('GET popular posts from /api/v1/posts/popular', async () => {
+    // post 12 posts
+    const posts = [];
+    for (let i = 0; i < 12; i++) posts.push(await agent.post('/api/v1/posts').send({
+      ...post1,
+      photoUrl: `https://placekitten.com/${i + 1}00/${i + 1}00`
+    }));
+
+    // can't finish writing this test until I finish the comment routes... 
+  });
 });
 
 describe.skip('comment routes', () => {
