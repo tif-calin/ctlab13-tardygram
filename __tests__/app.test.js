@@ -184,8 +184,16 @@ describe('post routes', () => {
     expect(res.body).toEqual(posts.slice(0, 10));
   });
 
-  test.skip('PATCH a post\'s caption using /api/v1/posts/:id', async () => {
-    // patch
+  test('PATCH a post\'s caption using /api/v1/posts/:id', async () => {
+    // make a post
+    const post = (await agent.post('/api/v1/posts').send(post1)).body;
+
+    // patch the post's caption
+    const caption = 'wow i regret posting this';
+    const res = await agent.patch(`/api/v1/posts/${post.id}`).send({ caption });
+
+    // test
+    expect(res.body).toEqual({ ...post, caption });
   });
 
   test.skip('DELETE a post from /api/v1/posts/:id', async () => {
