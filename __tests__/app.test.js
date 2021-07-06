@@ -104,6 +104,7 @@ describe('post routes', () => {
       caption: 'my baby!!!',
       tags: ['kitten', 'cat', 'pets']
     };
+
     post2 = {
       userId: res.body.id,
       photoUrl: 'https://placekitten.com/333/222',
@@ -136,14 +137,32 @@ describe('post routes', () => {
   });
 
   test('GET popular posts from /api/v1/posts/popular', async () => {
-    // post 12 posts
+    // post 12 posts and comments for the first 10
     const posts = [];
-    for (let i = 0; i < 12; i++) posts.push(await agent.post('/api/v1/posts').send({
-      ...post1,
-      photoUrl: `https://placekitten.com/${i + 1}00/${i + 1}00`
-    }));
+    for (let i = 0; i < 12; i++) {
+      const res = await agent.post('/api/v1/posts').send({
+        ...post1,
+        photoUrl: `https://placekitten.com/${i + 1}00/${i + 1}00`
+      });
 
-    // can't finish writing this test until I finish the comment routes... 
+      posts.push(res.body);
+      
+      // post some comments for that post
+      const numComments = Math.max(0, 10 - i);
+      for (let j = 0; j < numComments; j++) {
+        await agent.post('/api/v1/comments').send({
+          userId: '1',
+          postId: res.body.id,
+          comment: `you're ${j * i} times cooler than I'll ever be`
+        });
+      }
+    }
+
+    // get popular posts
+    const res = await agent.get('/api/v1/posts/popular');
+
+    // the first 10 posts should have 10, 9, 8, etc comments each
+    expect(res.body).toEqual(posts.slice(0, 10));
   });
 });
 
