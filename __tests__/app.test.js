@@ -2,7 +2,6 @@ import pool from '../lib/utils/pool.js';
 import setup from '../data/setup.js';
 import request from 'supertest';
 import app from '../lib/app.js';
-import User from '../lib/models/User.js';
 
 describe('user routes', () => {
   let user1;
@@ -73,14 +72,58 @@ describe('user routes', () => {
   });
 });
 
-describe.skip('post routes', () => {
-  beforeEach(() => {
-    return setup(pool);
+describe('post routes', () => {
+  const agent = request.agent(app);
+  let post1, user1;
+
+  beforeEach(async () => {
+    setup(pool);
+
+    // post a user
+    user1 = {
+      username: 'user1',
+      profilePhotoUrl: 'https://placekitten.com/300/200',
+      password: 'password'
+    };
+
+    const res = await request(app)
+      .post('/api/v1/auth/signup')
+      .send(user1)
+    ;
+
+    // make test posts
+    post1 = {
+      userId: res.body.id,
+      photoUrl: 'https://placekitten.com/300/300',
+      caption: 'my baby!!!',
+      tags: ['kitten', 'cat', 'pets']
+    };
+  });
+
+  test('POST for /api/v1/posts', async () => {
+    // sign in the user
+    await agent
+      .post('/api/v1/auth/signin')
+      .send(user1)
+    ;
+
+    // make a post
+    const res = await agent
+      .post('/api/v1/posts')
+      .send(post1)
+    ;
+
+    // test that post is correct
+    expect(res.body).toEqual({ ...post1, id: expect.any(String) });
   });
 });
 
 describe.skip('comment routes', () => {
   beforeEach(() => {
     return setup(pool);
+  });
+
+  test('', () => {
+
   });
 });
