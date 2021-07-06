@@ -147,12 +147,64 @@ describe('post routes', () => {
   });
 });
 
-describe.skip('comment routes', () => {
-  beforeEach(() => {
-    return setup(pool);
+describe('comment routes', () => {
+  const agent = request.agent(app);
+
+  let user, comment;
+
+  beforeEach(async () => {
+    setup(pool);
+
+    // post a user
+    user = {
+      username: 'user1',
+      profilePhotoUrl: 'https://placekitten.com/300/200',
+      password: 'password'
+    };
+
+    await request(app)
+      .post('/api/v1/auth/signup')
+      .send(user)
+    ;
+
+    // sign in the user
+    const userRes = await agent
+      .post('/api/v1/auth/signin')
+      .send(user)
+    ;
+
+    // post a post
+    const postRes = await agent.post('/api/v1/posts').send({
+      userId: userRes.body.id,
+      photoUrl: 'https://placekitten.com/300/300',
+      caption: 'my baby!!!',
+      tags: ['kitten', 'cat', 'pets']
+    });
+
+    // recreate comment
+    comment = {
+      userId: userRes.body.id,
+      postId: postRes.body.id,
+      comment: 'yasssss'
+    };
   });
 
-  test('', () => {
+  test('POST a comment to /api/v1/comments', async () => {
+    // post a comment
+    const res = await agent.post('/api/v1/comments').send(comment);
 
+    // test it
+    expect(res.body).toEqual({ ...comment, id: expect.any(String) });
+  });
+
+  test('DELETE a comment from /api/v1/comments/:id', async () => {
+    // post a comment
+    const res1 = await agent.post('/api/v1/comments').send(comment);
+
+    // delete that comment
+    const res2 = await agent.delete(`/api/v1/comments/${res1.body.id}`);
+
+    // test to see returned comment is correct
+    expect(res2.body).toEqual({ ...comment, id: expect.any(String) });
   });
 });
