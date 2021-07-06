@@ -132,7 +132,7 @@ describe('post routes', () => {
     const res = await agent.get('/api/v1/posts');
    
     // test
-    expect(res.body).toEqual([p1, p2]);
+    expect(res.body).toEqual([p1.body, p2.body]);
   });
 });
 
