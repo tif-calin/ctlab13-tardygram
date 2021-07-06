@@ -197,7 +197,14 @@ describe('post routes', () => {
   });
 
   test.skip('DELETE a post from /api/v1/posts/:id', async () => {
-    // delete 
+    // make a post
+    const post = (await agent.post('/api/v1/posts').send(post1)).body;
+
+    // delete that post
+    const res = await agent.delete(`/api/v1/posts/${post.id}`);
+
+    // test
+    expect(res.body).toEqual(post);
   });
 });
 
