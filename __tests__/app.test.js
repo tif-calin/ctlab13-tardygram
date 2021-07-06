@@ -136,6 +136,25 @@ describe('post routes', () => {
     expect(res.body).toEqual([p1.body, p2.body]);
   });
 
+  test('GET a post by id from /api/v1/posts/:id', async () => {
+    // make a post
+    const post = (await agent.post('/api/v1/posts').send(post1)).body;
+
+    // add a comment to that post
+    const comment = {
+      userId: post.userId,
+      postId: post.id,
+      comment: 'haha'
+    };
+    await agent.post('/api/v1/comments').send(comment);
+
+    // get that post by id
+    const res = await agent.get(`/api/v1/posts/${post.id}`);
+
+    // test to see that they're the same
+    expect(res.body).toEqual({ ...post, comments: [comment.comment] });
+  });
+
   test('GET popular posts from /api/v1/posts/popular', async () => {
     // post 12 posts and comments for the first 10
     const posts = [];
@@ -163,6 +182,14 @@ describe('post routes', () => {
 
     // the first 10 posts should have 10, 9, 8, etc comments each
     expect(res.body).toEqual(posts.slice(0, 10));
+  });
+
+  test.skip('PATCH a post\'s caption using /api/v1/posts/:id', async () => {
+    // patch
+  });
+
+  test.skip('DELETE a post from /api/v1/posts/:id', async () => {
+    // delete 
   });
 });
 
